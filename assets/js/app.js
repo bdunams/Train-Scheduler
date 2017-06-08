@@ -12,11 +12,26 @@ firebase.initializeApp(config);
 
 var database = firebase.database();
 
+// google OAuth
+$(document).ready(function(){
+  // Using a popup.
+var provider = new firebase.auth.GoogleAuthProvider();
+provider.addScope('profile');
+provider.addScope('email');
+firebase.auth().signInWithPopup(provider).then(function(result) {
+ // This gives you a Google Access Token.
+ var token = result.credential.accessToken;
+ // The signed-in user info.
+ var user = result.user;
+});
 
+})
+
+// initial variables
 var trainName, destination, firstTrain, frequency,minutesAway,nextArrival,childData;
 
   
-//Capture Button Click
+// Add Train Data Button Click
 $("#addData").on("click", function() {
   // Don't refresh the page!
   event.preventDefault();
@@ -27,24 +42,21 @@ $("#addData").on("click", function() {
   firstTrain = $("#first-train").val().trim();
   frequency = $("#frequency").val().trim();
   
+  // calulate the initial minutes till the first train
   minutesAway = moment(firstTrain, 'HH:mm').diff(moment(), 'minutes');
+  // initialize nextArrival to first train
   nextArrival = moment(firstTrain, 'HH:mm');
   
+  // if the train has already come, jump to next scheduled departure using the frequency
   while(minutesAway < 1){
     
     nextArrival = moment(nextArrival).add(frequency,'m');
     
     minutesAway = moment(nextArrival, 'HH:mm').diff(moment(), 'minutes');
-    
-    alert(nextArrival+"---"+minutesAway);
   }
-  
+  // get nextArrival time in correct format to for db
   nextArrival = moment(nextArrival).format('HH:mm');
-  
-  console.log(nextArrival,minutesAway);
-  
-  console.log(moment(nextArrival, 'HH:mm').diff(moment(), 'm'));
-  
+  // create a new entry for each train using push
   database.ref().push({
 
     trainName: trainName, 
@@ -57,21 +69,26 @@ $("#addData").on("click", function() {
   })
 });
 
+// function to show the current time 
+function currentTime(){
+  var currentTime = moment().format('hh: mm A')
+  $('#current-time').text(currentTime);
+}
+
+// function to both update nextArrival/minutesAway for all scheduled trains and display them on refresh of page
 function timeRefresh(childSnapshot){
   
+  // if childSnapShot exists
   if(childSnapshot){
     childData = childSnapshot.val();
   }
-  else{
-    
-  }
   
-  console.log(childData)
-  
+  // next arrival child data
   var nextArrivalChild = moment(childData.nextArrival,'HH:mm');
-  
+  // 
   var minutesAwayChild = moment(nextArrivalChild, 'HH:mm').diff(moment(), 'minutes');
   
+  // if the train has already come, jump to next scheduled departure using the frequency
   while(minutesAwayChild < 1){
     
     nextArrivalChild = moment(nextArrivalChild,'HH:mm').add(childData.frequency,'m');
@@ -80,10 +97,12 @@ function timeRefresh(childSnapshot){
 
   }
   
-  nextArrivalChild = moment(nextArrivalChild).format('HH:mm');
+  // get nextArrival time in correct format to for db
+  nextArrivalChild = moment(nextArrivalChild).format('h:mm A');
   
   //$('#train-data').empty()
   
+  // structure for data entry into train table
   var newTrainRow = $('<tr>');
   
   var newTrain = $('<td>').text(childData.trainName).appendTo(newTrainRow);
@@ -95,8 +114,9 @@ function timeRefresh(childSnapshot){
   newTrainRow.appendTo($('#train-data'));
   
 }
-console.log(childData)
+currentTime();
 
-var intervalId = setInterval(timeRefresh, 5000)
+var intervalId = setInterval(currentTime, 5000)
   
+// on child_added run function to refresh train times 
 database.ref().on('child_added', timeRefresh);

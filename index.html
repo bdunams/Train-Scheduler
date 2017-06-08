@@ -12,7 +12,8 @@
 <div class = "container">
   <div class="jumbotron">
     <div class="text-center">
-          <h1>Train Schedule</h1>           
+          <h1>Train Schedule</h1>
+          <h3 id="current-time"></h3>
     </div>
   </div>
   <!--Train schedule-->
@@ -54,22 +55,22 @@
               <form class="form">
                   <div class="form-group">
                   <label for="train name">Train Name</label>
-                  <input type="input" class="form-control" id="train-name">
+                  <input type="input" required class="form-control" id="train-name">
                   </div>
                   <div class="form-group">
                   <label for="train destination">Destination</label>
-                  <input type="input" class="form-control" id="destination">
+                  <input type="input" required class="form-control" id="destination">
                   </div>
                   <div class="form-group">
                   <label for="first train time">First Train Time(HH:mm AM/PM)</label>
-                  <input type="time" class="form-control" id="first-train">
+                  <input type="time" required class="form-control" id="first-train">
                   </div>
                   <div class="form-group">
                   <label for="frequency">Frequency(min)</label>
-                  <input type="number" class="form-control" id="frequency">
+                  <input type="number" required class="form-control" id="frequency">
                   </div>
+                  <button type="submit" class="btn btn-primary btn-large" id="addData" value="submit">Submit</button>
               </form>
-              <button type="submit" class="btn btn-primary btn-large" id="addData" value="submit">Submit</button>
           </div>
       </div>
   </div>         
